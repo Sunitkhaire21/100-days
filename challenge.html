@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100 Days of Challenge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .day {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .day:last-child {
+            border-bottom: none;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.5);
+        }
+        .complete {
+            color: green;
+        }
+        .date {
+            font-size: 0.9em;
+            color: #555;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>100 Days of Challenge.</h1>
+    <div class="container">
+        <h2>Track Your Progress</h2>
+        <p>Check off each day as you complete the daily task and exercises. The date will be shown when a day is marked as completed.<a href="index.html">Back_to_Python</a></p>
+        
+        <!-- Days list -->
+        <div id="days-list"></div>
+
+        <p id="completion-status"></p>
+    </div>
+
+    <script>
+        const totalDays = 100;
+
+        // Load saved progress and completion dates from localStorage
+        const savedProgress = JSON.parse(localStorage.getItem("dailyProgress")) || [];
+        const savedDates = JSON.parse(localStorage.getItem("dailyDates")) || {};
+
+        // Function to create checkboxes for 100 days
+        function generateDays() {
+            const daysList = document.getElementById("days-list");
+            for (let i = 1; i <= totalDays; i++) {
+                const dayDiv = document.createElement("div");
+                dayDiv.classList.add("day");
+                
+                const label = document.createElement("label");
+                label.textContent = `Day ${i}`;
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.dataset.day = i;
+
+                // Show the completion date (if available)
+                const dateSpan = document.createElement("span");
+                dateSpan.classList.add("date");
+                if (savedProgress.includes(i)) {
+                    checkbox.checked = true;
+                    dateSpan.textContent = `Completed on: ${savedDates[i] || ""}`;
+                }
+
+                checkbox.addEventListener("change", () => {
+                    updateProgress(i, checkbox.checked, dateSpan);
+                });
+
+                dayDiv.appendChild(label);
+                dayDiv.appendChild(checkbox);
+                dayDiv.appendChild(dateSpan);
+                daysList.appendChild(dayDiv);
+            }
+
+            updateCompletionStatus();
+        }
+
+        // Update progress when a checkbox is checked or unchecked
+        function updateProgress(day, isChecked, dateSpan) {
+            const today = new Date().toLocaleDateString(); // Get today's date
+
+            if (isChecked) {
+                if (!savedProgress.includes(day)) {
+                    savedProgress.push(day);
+                }
+                savedDates[day] = today;  // Save the completion date
+                dateSpan.textContent = `Completed on: ${today}`;
+            } else {
+                const index = savedProgress.indexOf(day);
+                if (index !== -1) {
+                    savedProgress.splice(index, 1);
+                }
+                delete savedDates[day];  // Remove the date if unchecked
+                dateSpan.textContent = "";
+            }
+
+            localStorage.setItem("dailyProgress", JSON.stringify(savedProgress));
+            localStorage.setItem("dailyDates", JSON.stringify(savedDates));
+            updateCompletionStatus();
+        }
+
+        // Update the completion status
+        function updateCompletionStatus() {
+            const completionStatus = document.getElementById("completion-status");
+            const completedDays = savedProgress.length;
+            if (completedDays === totalDays) {
+                completionStatus.textContent = `Congratulations! You have completed 100 days of Challenge!`;
+                completionStatus.classList.add("complete");
+            } else {
+                completionStatus.textContent = `${completedDays} / ${totalDays} days completed.`;
+            }
+        }
+
+        // Initialize the days list
+        generateDays();
+    </script>
+</body>
+</html>
